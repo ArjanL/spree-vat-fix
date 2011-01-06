@@ -1,13 +1,11 @@
-class Calculator::Vat < Calculator
-
-  def self.description
-    I18n.t("vat")
+TaxRate.class_eval do 
+  def is_default?
+    self.tax_category.is_default
   end
+end
 
-  def self.register
-    super
-    TaxRate.register_calculator(self)
-  end
+Calculator::Vat.class_eval do
+
 
   # list the vat rates for the default country
   def self.default_rates
@@ -19,22 +17,14 @@ class Calculator::Vat < Calculator
     calcs.collect { |calc| calc.calculable }
   end
 
-  def self.calculate_tax(order, rates=default_rates)
-    puts "NO RATES, returning"
-    return 0 if rates.empty?
-    # note: there is a bug with associations in rails 2.1 model caching so we're using this hack
-    # (see http://rails.lighthouseapp.com/projects/8994/tickets/785-caching-models-fails-in-development)
-    cache_hack = rates.first.respond_to?(:tax_category_id)
+  def self.calculate_tax(order)
     puts "RATES are #{rates} , HACK is #{cache_hack}"
     taxable_totals = {}
     order.line_items.each do |line_item|
       puts "For #{line_item.variant}" 
       puts "No category" unless line_item.variant.product.tax_category
+      # TODO, should use default tax category if none set
       next unless tax_category = line_item.variant.product.tax_category
-      puts "No rate with hack "
-      next unless rate = rates.find { | vat_rate | vat_rate.tax_category_id == tax_category.id } if cache_hack
-      puts "No rate without hack "
-      next unless rate = rates.find { | vat_rate | vat_rate.tax_category == tax_category } unless cache_hack
       taxable_totals[tax_category] ||= 0
       puts "CALCULATE TAX for #{line_item.price} is #{ (line_item.price * rate.amount).round(2, BigDecimal::ROUND_HALF_UP)}"
       taxable_totals[tax_category] += (line_item.price * rate.amount).round(2, BigDecimal::ROUND_HALF_UP) * line_item.quantity
@@ -50,30 +40,40 @@ class Calculator::Vat < Calculator
 
   def self.calculate_tax_on(product_or_variant)
     vat_rates = default_rates
-
+    product = product_or_variant.is_a?(Product) ? product_or_variant : product_or_variant.product
+    puts "TAX ON RATES #{vat_rates}"
     return 0 if vat_rates.nil?
-    return 0 unless tax_category = product_or_variant.is_a?(Product) ? product_or_variant.tax_category : product_or_variant.product.tax_category
+    return 0 unless tax_category = product.tax_category
+    # TODO finds first (or any?) rate. Should check default category first
     return 0 unless rate = vat_rates.find { | vat_rate | vat_rate.tax_category_id == tax_category.id }
-    puts "CALCULATE TAX ON#{product_or_variant.price}  #{product_or_variant.price * rate.amount}"
+    puts "CALCULATE TAX ON #{product_or_variant.price}  #{product_or_variant.price * rate.amount}"
     (product_or_variant.price * rate.amount).round(2, BigDecimal::ROUND_HALF_UP)
   end
 
   # computes vat for line_items associated with order, and tax rate and now coupon discounts are taken into account in tax calcs
   def compute(order)
+    debug = false
     rate = self.calculable
-    puts "SELF RATE IS #{rate.amount}"
-    line_items = order.line_items.select { |i| i.product.tax_category == rate.tax_category }
-    puts "Apllicable items #{line_items.count}"
+    puts "SELF RATE IS #{rate.amount}" if debug
+    #TODO coupons
     #coupon_total = order.coupon_credits.map(&:amount).sum * rate.amount
-    shipping_charge_total = order.shipments.map(&:cost).sum * rate.amount
-    line_items.inject(shipping_charge_total) {|sum, line_item|
-    #  rate = line_item.product.tax_category.tax_rates.first
-      puts "USING RATE #{rate}"
-      next unless rate
-      puts "RATE IS #{rate.amount}"
-      puts "COMPUTE for #{line_item.price} is #{ (line_item.price * rate.amount).round(2, BigDecimal::ROUND_HALF_UP)}"
-      sum += (line_item.price * rate.amount) * line_item.quantity
-    }
+    if rate.tax_category.is_default and not order.shipments.empty?
+      tax = (order.shipments.map(&:cost).sum) * rate.amount 
+    end
+    tax = 0 unless tax
+    order.line_items.each do  | line_item|
+      if line_item.product.tax_category  #only apply this calculator to products assigned this rates category
+        next unless line_item.product.tax_category == rate.tax_category
+      else
+        next unless is_default? # and apply to products with no category, if this is the default rate
+        #TODO: though it would be a user error, there may be several rates for the default category
+        #      and these would be added up by this. 
+      end
+      next unless line_item.product.tax_category.tax_rates.include? rate
+      puts "COMPUTE for #{line_item.price} is #{ line_item.price * rate.amount} RATE IS #{rate.amount}" if debug
+      tax += (line_item.price * rate.amount) * line_item.quantity
+    end
+    tax
   end
 
 end
