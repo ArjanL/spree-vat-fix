@@ -15,7 +15,7 @@ It does this by :
 
 - providing a Calculator::VAT implementation and  
 - overriding tax adjustment creation in Order
-- adding a config option to include shipment in taxes
+- adding taxes to shipment if vat is not included in prices (ie :show_price_inc_vat == false)
 
 Contribute!
 =======
@@ -36,7 +36,7 @@ State
 ======
 
 - several vat categories in an order WORKS
-- vat applied to shipping by default tax WORKS
+- vat applied to shipping by default tax WORKS (if  :show_price_inc_vat == false)
 - using default category WORKS 
 - running Order numbers WORK
 
@@ -44,7 +44,6 @@ All tested with  :show_price_inc_vat => false so
 
 - Preview box / Cart link / cart summary NOT done for show_price_inc_vat => true
 - Coupons NOT done
-- shipping config NOT done
 
 NO TESTS  - This is strictly "works for me" software, use at own risk and/or contribute tests
 

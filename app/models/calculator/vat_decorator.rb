@@ -57,7 +57,7 @@ Calculator::Vat.class_eval do
     puts "SELF RATE IS #{rate.amount}" if debug
     #TODO coupons
     #coupon_total = order.coupon_credits.map(&:amount).sum * rate.amount
-    if rate.tax_category.is_default and not order.shipments.empty?
+    if rate.tax_category.is_default and not order.shipments.empty? and !Spree::Config[ :show_price_inc_vat]
       tax = (order.shipments.map(&:cost).sum) * rate.amount 
     end
     tax = 0 unless tax
