@@ -1,5 +1,4 @@
 require 'spree_core'
-require 'spree_vat_fix_hooks'
 
 module SpreeVatFix
   class Engine < Rails::Engine

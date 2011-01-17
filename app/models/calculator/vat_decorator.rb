@@ -3,7 +3,7 @@ TaxRate.class_eval do
     self.tax_category.is_default
   end
 end
-
+require 'calculator/vat'
 Calculator::Vat.class_eval do
 
 
@@ -30,7 +30,6 @@ Calculator::Vat.class_eval do
       taxable_totals[tax_category] += (line_item.price * rate.amount).round(2, BigDecimal::ROUND_HALF_UP) * line_item.quantity
     end
 
-    return 0 if taxable_totals.empty?
     tax = 0
     taxable_totals.values.each do |total|
       tax += total
@@ -52,7 +51,7 @@ Calculator::Vat.class_eval do
 
   # computes vat for line_items associated with order, and tax rate and now coupon discounts are taken into account in tax calcs
   def compute(order)
-    debug = false
+    debug = true
     rate = self.calculable
     puts "SELF RATE IS #{rate.amount}" if debug
     #TODO coupons
