@@ -4,23 +4,24 @@ TaxRate.class_eval do
   end
 end
 Admin::ProductsController.class_eval do 
-  before_filter :fix_vat, :only => :update
+  after_filter :fix_vat, :only => :update
   
   def fix_vat
     return unless Spree::Config[:show_price_inc_vat]
     return unless params[:product]
     return unless price = params[:product][:price]
+    product = Product.find_by_permalink params[:id]
+    #puts "Product price = #{product.price}"
     rate = Calculator::Vat.default_rates.first
     return unless rate
     new_price = price.to_d / ( 1 + rate.amount )
-    puts "Adjusing price #{price} to #{new_price}"
-    params[:product][:price] = new_price.to_s
+    #puts "Adjusting price #{price} to #{new_price}"
+    product.price = new_price.to_s
   end
   
 end
 
 
-require 'calculator/vat'
 Calculator::Vat.class_eval do
 
 
