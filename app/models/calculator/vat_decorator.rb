@@ -73,12 +73,15 @@ Calculator::Vat.class_eval do
     debug = true
     rate = self.calculable
     puts "SELF RATE IS #{rate.amount}" if debug
-    #TODO coupons
-    #coupon_total = order.coupon_credits.map(&:amount).sum * rate.amount
-    if rate.tax_category.is_default and not order.shipments.empty? and !Spree::Config[ :show_price_inc_vat]
-      tax = (order.shipments.map(&:cost).sum) * rate.amount 
+    tax = 0
+    if rate.tax_category.is_default and !Spree::Config[ :show_price_inc_vat]
+      order.adjustments.each do | adjust |
+        next if adjust.originator_type == "TaxRate"
+        add = adjust.amount * rate.amount
+        puts "Applying default rate to adjustment #{adjust.label} (#{adjust.originator_type} ), sum = #{add}"
+        tax += add
+      end
     end
-    tax = 0 unless tax
     order.line_items.each do  | line_item|
       if line_item.product.tax_category  #only apply this calculator to products assigned this rates category
         next unless line_item.product.tax_category == rate.tax_category

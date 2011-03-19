@@ -13,7 +13,7 @@ This extension tries to fix at least several if not all of these problems
 
 It does this by :
 
-- providing a Calculator::VAT implementation and  
+- providing a Calculator::VAT implementation and
 - overriding tax adjustment creation in Order
 - adding taxes to shipment if vat is not included in prices (ie :show_price_inc_vat == false)
 
@@ -37,13 +37,13 @@ State
 
 - several vat categories in an order WORKS
 - vat applied to shipping by default tax WORKS (if  :show_price_inc_vat == false)
+- in fact (default) tax is applied to all non-tax adjustments
 - using default category WORKS 
 - running Order numbers WORK
 
 All tested with  :show_price_inc_vat => false so 
 
 - Preview box / Cart link / cart summary NOT done for show_price_inc_vat => true
-- Coupons NOT done
 
 NO TESTS  - This is strictly "works for me" software, use at own risk and/or contribute tests
 
