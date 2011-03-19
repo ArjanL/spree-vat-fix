@@ -72,7 +72,7 @@ Calculator::Vat.class_eval do
   def compute(order)
     debug = true
     rate = self.calculable
-    puts "SELF RATE IS #{rate.amount}" if debug
+    puts "#{rate.id} RATE IS #{rate.amount}" if debug
     tax = 0
     if rate.tax_category.is_default and !Spree::Config[ :show_price_inc_vat]
       order.adjustments.each do | adjust |
