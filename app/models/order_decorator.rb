@@ -23,15 +23,15 @@ Order.class_eval do
   # create tax rate adjustments (note plural) that apply to the shipping address (not like billing in original).
   # removes any previous Tax - Adjustments (in case the address changed). Could probably be optimised (later)
   def create_tax_charge!
-    puts " Adjustments #{adjustments} TAX #{tax_total}"
-    puts "CREATE TAX for #{ship_address}  "
+    #puts "Adjustments #{adjustments} TAX #{tax_total}"
+    #puts "CREATE TAX for #{ship_address}  "
     matching_rates = TaxRate.all.select { |rate| rate.zone.include?(ship_address) }
 
     adjustments.where(:originator_type => "TaxRate").each do |old_charge|
       old_charge.destroy
     end
     matching_rates.each do |rate|
-      puts "Creating rate #{rate.amount}" 
+      #puts "Creating rate #{rate.amount}" 
       rate.create_adjustment( rate.tax_category.description , self, self, true)
     end
   end
