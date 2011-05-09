@@ -1,5 +1,3 @@
-require 'spree_core'
-
 module SpreeVatFix
   class Engine < Rails::Engine
 
