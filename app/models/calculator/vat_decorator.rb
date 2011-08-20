@@ -3,24 +3,6 @@ TaxRate.class_eval do
     self.tax_category.is_default
   end
 end
-Admin::ProductsController.class_eval do 
-  after_filter :fix_vat, :only => :update
-  
-  def fix_vat
-    return unless Spree::Config[:show_price_inc_vat]
-    return unless params[:product]
-    return unless price = params[:product][:price]
-    product = Product.find_by_permalink params[:id]
-    #puts "Product price = #{product.price}"
-    rate = Calculator::Vat.default_rates.first
-    return unless rate
-    new_price = price.to_d / ( 1 + rate.amount )
-    #puts "Adjusting price #{price} to #{new_price}"
-    product.price = new_price.to_s
-  end
-  
-end
-
 
 Calculator::Vat.class_eval do
 
@@ -41,7 +23,7 @@ Calculator::Vat.class_eval do
     calcs = Calculator::Vat.find(:all, :include => {:calculable => :zone}).select {
       |vat| vat.calculable.zone.country_list.include?(origin)
     }
-    puts "DEFAULT RATES #{calcs.collect { |calc| calc.calculable.amount }.join(' ')}"
+    #puts "DEFAULT RATES #{calcs.collect { |calc| calc.calculable.amount }.join(' ')}"
     calcs.collect { |calc| calc.calculable }
   end
 
@@ -92,7 +74,7 @@ Calculator::Vat.class_eval do
       end
       next unless line_item.product.tax_category.tax_rates.include? rate
       puts "COMPUTE for #{line_item.price} is #{ line_item.price * rate.amount} RATE IS #{rate.amount}" if debug
-      tax += (line_item.price * rate.amount) * line_item.quantity
+      tax += (line_item.price * rate.amount).round(2, BigDecimal::ROUND_HALF_UP) * line_item.quantity
     end
     tax
   end

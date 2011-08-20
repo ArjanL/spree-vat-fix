@@ -12,3 +12,8 @@ module SpreeVatFix
     config.to_prepare &method(:activate).to_proc
   end
 end
+class Hooks < Spree::ThemeSupport::HookListener
+  insert_before :admin_product_form_right do 
+    "Price incl vat <%=product_price(@product)%>"
+  end
+end
