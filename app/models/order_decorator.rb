@@ -1,6 +1,7 @@
 Order.class_eval do
 
-
+  after_create :create_tax_charge!
+  
   alias original_generate_order_number generate_order_number 
 
   def generate_order_number
@@ -25,8 +26,13 @@ Order.class_eval do
   def create_tax_charge!
     #puts "Adjustments #{adjustments} TAX #{tax_total}"
     #puts "CREATE TAX for #{ship_address}  "
-    matching_rates = TaxRate.all.select { |rate| rate.zone.include?(ship_address) }
-
+    all_rates = TaxRate.all
+    matching_rates = all_rates.select { |rate| rate.zone.include?(ship_address) }
+    if matching_rates.empty?
+      matching_rates = all_rates.select{|rate| # get all rates that apply to default country 
+          rate.zone.country_list.collect{|c| c.id}.include?(Spree::Config[:default_country_id])
+        }
+    end
     adjustments.where(:originator_type => "TaxRate").each do |old_charge|
       old_charge.destroy
     end

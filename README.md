@@ -50,10 +50,7 @@ Status
 - using default category WORKS 
 - running Order numbers WORK
 - fixed some rounding issues 
- 
-All tested with  :show_price_inc_vat => false so 
-
-- Preview box / Cart link / cart summary PARTLY done for show_price_inc_vat => true
+- finally got the summary box to work for the vat_inc true (normal) case.
 
 NO TESTS  - This is strictly "works for me" software, use at own risk and/or contribute tests
 
