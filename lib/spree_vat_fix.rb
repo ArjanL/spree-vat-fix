@@ -14,6 +14,8 @@ module SpreeVatFix
 end
 class Hooks < Spree::ThemeSupport::HookListener
   insert_before :admin_product_form_right do 
-    "Price incl vat <%=product_price(@product)%>"
+    "<%=product_price(@product)%> Reverse <%= t('vat')%> 
+    <input type='checkbox' name='price_includes_vat' value='true' checked='true'/>     "
   end
 end
+
