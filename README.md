@@ -18,6 +18,9 @@ It does this by :
 - adding taxes to shipment if vat is not included in prices (ie :show_price_inc_vat == false)
 - giving you product price incl vat on the product screen (no more adjusing it automatically)
 
+The admin also gets a checkbox on the product page to reverse the vat. Meaning you can put the price including 
+vat into the field and it will be adjusted to the vat 0% price (using the tax category yu put or the default)
+ 
 Contribute!
 =======
 
@@ -45,12 +48,12 @@ Status
 ======
 
 - several vat categories in an order WORKS
-- vat applied to shipping by default tax WORKS (if  :show_price_inc_vat == false)
 - in fact (default) tax is applied to all non-tax adjustments
 - using default category WORKS 
 - running Order numbers WORK
 - fixed some rounding issues 
 - finally got the summary box to work for the vat_inc true (normal) case.
+- vat applied to shipping by default tax WORKS (if  :show_price_inc_vat == false)
 
 NO TESTS  - This is strictly "works for me" software, use at own risk and/or contribute tests
 
